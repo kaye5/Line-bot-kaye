@@ -54,11 +54,12 @@ const lineClient = new LineClient(config);
  */
 app.post("/webhook", middleware(config), (req, res) => {
     try {
-        if (req.body.events[0].type == 'join') {
-            let type = req.body.events[0].source.type
-            if (type == 'group') {
-                getGroupID(req.body.events[0])
-            }
+        let event = req.body.events[0];
+        if (event.source.type == 'group') {
+            if (event.type == 'join') {
+                getGroupID(event)
+            } else if(event.type == 'leave')
+                leaveGroup(event);
             saveLog(req.body)
         }
         res.sendStatus(200)
@@ -79,7 +80,7 @@ async function getGroupID(data) {
     collChat.insertOne(data.source)
     let res = await lineClient.pushMessage(String(data.source.groupId), [{
             type: 'text',
-            text: `Hey there,this is kaye's companion $.\nI'll help make your daily life better.`,
+            text: `Hey there,this is kaye's companion $.\n Since i have limited server resource i can't make specific resposne. but you can ask me to open the webhook event for response.`,
             emojis: [{
                 index: 35,
                 productId: "5ac1bfd5040ab15980c9b435",
@@ -97,12 +98,16 @@ async function getGroupID(data) {
         date: new Date()
     })
 }
+async function leaveGroup(data){
+    collChat.deleteOne(data.source);
+}
 
 function saveLog(body) {
     let coll = database.collection('logs')
     coll.insertOne({
         events: body.events,
         destination: body.destination,
+        date : new Date(),
     })
 }
 const PORT = process.env.PORT || 3000;
