@@ -80,7 +80,7 @@ async function getGroupID(data) {
     collChat.insertOne(data.source)
     let res = await lineClient.pushMessage(String(data.source.groupId), [{
             type: 'text',
-            text: `Hey there,this is kaye's companion $.\n Since i have limited server resource i can't make specific resposne. but you can ask me to open the webhook event for response.`,
+            text: `Hey there,this is kaye's companion $.\nSince i have limited server resource i can't make specific resposne. but you can ask me to open the webhook event for response.`,
             emojis: [{
                 index: 35,
                 productId: "5ac1bfd5040ab15980c9b435",

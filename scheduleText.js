@@ -28,10 +28,13 @@ const config = {
 };
 const lineClient = new LineClient(config);
 
-function getChat(){
-    return collChat.find({type : 'group'})
+function getChat() {
+    return collChat.find({
+        type: 'group'
+    })
 }
-function saveReq(res){
+
+function saveReq(res) {
     collReq.insertOne({
         request: res,
         date: new Date()
@@ -47,65 +50,94 @@ const CronOption = {
     timezone: "Asia/Jakarta"
 }
 
+const unplashAPI = `https://api.unsplash.com/photos/random/?client_id=${process.env.UNPLASH}&count=1&query=nature-green`
+
 //Morning Greeting
-async function goodMorning(){
+async function goodMorning() {
     let chats = await getChat()
     let res = await axios.get('https://quotes.rest/qod?language=en')
+    let image = await axios.get(unplashAPI);
     let QOD = res.data.contents.quotes[0];
-    chats.forEach(chat => {
-        let res = lineClient.pushMessage(chat.groupId,[{
+    chats.forEach(async chat => {
+        let res = await lineClient.pushMessage(chat.groupId, [{
+            type: 'text',
+            text: `Good morning, it's ${moment().format('dddd, MMMM Do YYYY, h:mm a')}.\nI hope you have a nice day :) and don't forget to eat your breakfast.\n${QOD.quote}\n-${QOD.author}`
+        }, {
+            type: 'image',
+            originalContentUrl: image[0].urls.regular,
+            previewImageUrl: image[0].urls.thumb
+        }])
+        console.log(res)
+        saveReq(res);
+    });
+}
+cron.schedule('0 0 7 * * *', () => {
+    goodMorning();
+}, CronOption)
+
+//News 
+async function sendNews(){
+    const newsAPI = `https://newsapi.org/v2/top-headlines?country=id&apiKey=${process.env.NEWSAPI}`
+    let chats = await getChat();
+    let news = await axios.get(newsAPI);
+    let article = news.data.articles[0]
+    chats.forEach(async chat => {
+        let res = await lineClient.pushMessage(chat.groupId, [{
+            type : 'image',
+            originalContentUrl : article.urlToImage,
+            previewImageUrl : article.urlToImage
+        },{
             type : 'text',
-            text : `Good morning, it's ${moment().format('dddd, MMMM Do YYYY, h:mm a')}.\nI hope you have a nice day :) and don't forget to eat your breakfast.\n${QOD.quote}\n-${QOD.author}`
+            text : `${article.title}\n${article.url}`
         }])
         saveReq(res);
     });
 }
-cron.schedule('0 0 7 * * *',()=>{
-    goodMorning();
+cron.schedule('0 0 9 * * *',()=>{
+    sendNews();
 },CronOption)
-
 
 //Afternoon Geeting
-async function goodAfternnoon(){
+async function goodAfternnoon() {
     let chats = await getChat();
-    chats.forEach(chat => {
-        let res = lineClient.pushMessage(chat.groupId,[{
-            type : 'text',
-            text : `Good afternoon everyone, it's ${moment().format('h:mm a')}.\nHave you wake up yet ? cause the real me haven't.\nMake sure you have eaten your lunch and stay safe at home if possible.`
+    chats.forEach(async chat => {
+        let res = await lineClient.pushMessage(chat.groupId, [{
+            type: 'text',
+            text: `Good afternoon everyone, it's ${moment().format('h:mm a')}.\nHave you wake up yet ? cause the real me haven't.\nMake sure you have eaten your lunch and stay safe at home if possible.`
         }])
         saveReq(res);
     });
 }
-cron.schedule('0 0 12 * * *',()=>{
+cron.schedule('0 0 12 * * *', () => {
     goodAfternnoon()
-},CronOption)
+}, CronOption)
 
 //Evening Greeting 
-async function eveningGreeting(){
+async function eveningGreeting() {
     let chats = await getChat();
-    chats.forEach(chat => {
-        let res = lineClient.pushMessage(chat.groupId,[{
-            type : 'text',
-            text : `Evening everyone !, it's ${moment().format('h:mm a')}.\nIt's almost night, have you had your dinner yet? cause of this i guess it's not a tiring day.`
+    chats.forEach(async chat => {
+        let res = await lineClient.pushMessage(chat.groupId, [{
+            type: 'text',
+            text: `Evening everyone !, it's ${moment().format('h:mm a')}.\nIt's almost night, have you had your dinner yet? cause of this i guess it's not a tiring day.`
         }])
         saveReq(res);
     });
 }
-cron.schedule('0 30 18 * * *',()=>{
+cron.schedule('0 30 18 * * *', () => {
     eveningGreeting()
-},CronOption)
+}, CronOption)
 
 //Goodnight Greeting
-async function goodNight(){
+async function goodNight() {
     let chats = await getChat();
-    chats.forEach(chat => {
-        let res = lineClient.pushMessage(chat.groupId,[{
-            type : 'text',
-            text : `Nite nite, it's ${moment().format('h:mm a')}.\nI'm sure some of you must be gibah lol.\nWell it's night already so that's it for today. Go sleep already lah stay healthy dont staying up late lol.`
+    chats.forEach(async chat => {
+        let res = await lineClient.pushMessage(chat.groupId, [{
+            type: 'text',
+            text: `Nite nite, it's ${moment().format('h:mm a')}.\nI'm sure some of you must be gibah lol.\nWell it's night already so that's it for today. Go sleep already lah stay healthy dont staying up late lol.`
         }])
         saveReq(res);
     });
 }
-cron.schedule('0 30 22 * * *',()=>{
+cron.schedule('0 30 22 * * *', () => {
     goodNight()
-},CronOption)
+}, CronOption)
