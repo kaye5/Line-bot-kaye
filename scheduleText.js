@@ -160,6 +160,18 @@ cron.schedule('0 30 22 * * *', () => {
     goodNight()
 }, CronOption)
 
-cron.schedule('0 12,13 * * * *',()=>{
-    console.log('1')
+async function sendCovidData(){
+    let chats = await getChat();
+    const Covid = require('./covid')
+    let covid = await Covid.getCovidData('id');
+    chats.forEach(async chat => {
+        let res = await lineClient.pushMessage(chat.groupId, [{
+            type: 'text',
+            text: `Hello ${moment().format('h:mm a')}. Covid-19 case.\nActive : ${covid.Active}.\nRecovered : ${covid.Recovered}.\nDeaths : ${covid.Deaths}.\nTotal : ${covid.Confirmed}.`
+        }])
+        saveReq(res);
+    });
+}
+cron.schedule('0 30 8,20 * * *',()=>{
+    sendCovidData();
 })
