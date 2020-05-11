@@ -67,13 +67,32 @@ async function goodMorning() {
             originalContentUrl: image[0].urls.regular,
             previewImageUrl: image[0].urls.thumb
         }])
-        console.log(res)
         saveReq(res);
     });
 }
 cron.schedule('0 0 7 * * *', () => {
     goodMorning();
 }, CronOption)
+
+//Send Weather 
+const Yahoo = require('./yahoo_api')
+function sendWeather(){
+    Yahoo.getYahooWeather(async (data)=>{
+        var data = JSON.parse(data)
+        let chats = await getChat();
+        let curW = data.current_observation
+        chats.forEach(async chat => {
+            let res = await lineClient.pushMessage(chat.groupId, [{
+                type: 'text',
+                text: `Whatsup, it's ${moment().format('dddd, MMMM Do YYYY, h:mm a')}. Current weather.\n${data.location.region}, ${data.location.city}.\nTemperature :${curW.condition.temperature} F.\nCondition : ${curW.condition.text}.`
+            }])
+            saveReq(res);
+        });
+    });
+}
+cron.schedule('0 0 8,6 * * *',()=>{
+    sendWeather();
+})
 
 //News 
 async function sendNews(){
