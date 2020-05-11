@@ -91,7 +91,7 @@ async function sendWeather(){
 }
 cron.schedule('0 0 8,19 * * *',()=>{
     sendWeather();
-})
+},CronOption)
 
 //News 
 async function sendNews(){
@@ -174,4 +174,4 @@ async function sendCovidData(){
 }
 cron.schedule('0 30 8,20 * * *',()=>{
     sendCovidData();
-})
+},CronOption)
