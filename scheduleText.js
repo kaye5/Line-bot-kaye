@@ -75,22 +75,21 @@ cron.schedule('0 0 7 * * *', () => {
 }, CronOption)
 
 //Send Weather 
-const Yahoo = require('./yahoo_api')
-function sendWeather(){
-    Yahoo.getYahooWeather(async (data)=>{
-        var data = JSON.parse(data)
-        let chats = await getChat();
-        let curW = data.current_observation
-        chats.forEach(async chat => {
-            let res = await lineClient.pushMessage(chat.groupId, [{
-                type: 'text',
-                text: `Whatsup, it's ${moment().format('dddd, MMMM Do YYYY, h:mm a')}. Current weather.\n${data.location.region}, ${data.location.city}.\nTemperature :${curW.condition.temperature} F.\nCondition : ${curW.condition.text}.`
-            }])
-            saveReq(res);
-        });
+
+async function sendWeather(){
+    let chats = await getChat();
+    let res = await axios.get(`http://dataservice.accuweather.com/forecasts/v1/daily/1day/211298?apikey=${process.env.ACCU_WEATHER}&metric=true`)
+    let Headline = res.data.Headline;
+    let Daily = res.data.DailyForecasts[0]
+    chats.forEach(async chat => {
+        let res = await lineClient.pushMessage(chat.groupId, [{
+            type: 'text',
+            text: `Whatsup, it's ${moment().format('dddd, MMMM Do YYYY, h:mm a')}. Today's Weather ${Headline.Text}\nCategory : ${Headline.Category}.\nTemperature Min : ${Daily.Temperature.Minimum.Value} C.\nMax : ${Daily.Temperature.Maximum.Value} C.\nDay : ${Daily.Day.IconPhrase}\mNight : ${Daily.Night.IconPhrase}`
+        }])
+        saveReq(res);
     });
 }
-cron.schedule('0 0 8,6 * * *',()=>{
+cron.schedule('0 0 8,19 * * *',()=>{
     sendWeather();
 })
 
