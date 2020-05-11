@@ -111,7 +111,7 @@ async function sendNews(){
         saveReq(res);
     });
 }
-cron.schedule('0 0 9 * * *',()=>{
+cron.schedule('0 0 9,20 * * *',()=>{
     sendNews();
 },CronOption)
 
@@ -159,3 +159,7 @@ async function goodNight() {
 cron.schedule('0 30 22 * * *', () => {
     goodNight()
 }, CronOption)
+
+cron.schedule('0 12,13 * * * *',()=>{
+    console.log('1')
+})
