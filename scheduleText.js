@@ -84,7 +84,7 @@ async function sendWeather(){
     chats.forEach(async chat => {
         let res = await lineClient.pushMessage(chat.groupId, [{
             type: 'text',
-            text: `Whatsup, it's ${moment().format('dddd, MMMM Do YYYY, h:mm a')}. Today's Weather ${Headline.Text}\nCategory : ${Headline.Category}.\nTemperature Min : ${Daily.Temperature.Minimum.Value} C.\nMax : ${Daily.Temperature.Maximum.Value} C.\nDay : ${Daily.Day.IconPhrase}\mNight : ${Daily.Night.IconPhrase}`
+            text: `Whatsup, it's ${moment().format('dddd, MMMM Do YYYY, h:mm a')}. Today's Weather ${Headline.Text}\nCategory : ${Headline.Category}.\nTemperature Min : ${Daily.Temperature.Minimum.Value} C.\nMax : ${Daily.Temperature.Maximum.Value} C.\nDay : ${Daily.Day.IconPhrase}\nNight : ${Daily.Night.IconPhrase}`
         }])
         saveReq(res);
     });
