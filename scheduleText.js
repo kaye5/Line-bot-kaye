@@ -57,6 +57,7 @@ async function goodMorning() {
     let chats = await getChat()
     let res = await axios.get('https://quotes.rest/qod?language=en')
     let image = await axios.get(unplashAPI);
+    image = image.data[0]
     let QOD = res.data.contents.quotes[0];
     chats.forEach(async chat => {
         let res = await lineClient.pushMessage(chat.groupId, [{
@@ -64,8 +65,8 @@ async function goodMorning() {
             text: `Good morning, it's ${moment().format('dddd, MMMM Do YYYY, h:mm a')}.\nI hope you have a nice day :) and don't forget to eat your breakfast.\n${QOD.quote}\n-${QOD.author}`
         }, {
             type: 'image',
-            originalContentUrl: image[0].urls.regular,
-            previewImageUrl: image[0].urls.thumb
+            originalContentUrl: image.urls.regular,
+            previewImageUrl: image.urls.thumb
         }])
         saveReq(res);
     });
@@ -84,12 +85,12 @@ async function sendWeather(){
     chats.forEach(async chat => {
         let res = await lineClient.pushMessage(chat.groupId, [{
             type: 'text',
-            text: `Whatsup, it's ${moment().format('dddd, MMMM Do YYYY, h:mm a')}. Today's Weather ${Headline.Text}\nCategory : ${Headline.Category}.\nTemperature Min : ${Daily.Temperature.Minimum.Value} C.\nMax : ${Daily.Temperature.Maximum.Value} C.\nDay : ${Daily.Day.IconPhrase}\nNight : ${Daily.Night.IconPhrase}`
+            text: `Whatsup, it's ${moment().format('h:mm a')}. Today's Weather ${Headline.Text}\nCategory : ${Headline.Category}.\nTemperature Min : ${Daily.Temperature.Minimum.Value} C.\nMax : ${Daily.Temperature.Maximum.Value} C.\nDay : ${Daily.Day.IconPhrase}\nNight : ${Daily.Night.IconPhrase}`
         }])
         saveReq(res);
     });
 }
-cron.schedule('0 0 8,19 * * *',()=>{
+cron.schedule('0 0 8,13,19 * * *',()=>{
     sendWeather();
 },CronOption)
 
